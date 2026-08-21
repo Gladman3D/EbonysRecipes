@@ -186,7 +186,7 @@
     background:var(--ink);color:var(--cream);padding:10px 20px;border-radius:999px;font-size:13.5px;
     opacity:0;transition:opacity .2s ease, transform .2s ease;pointer-events:none;z-index:200;
   }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);} 
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
   @media (max-width:520px){
     .row2{grid-template-columns:1fr;}
@@ -550,4 +550,187 @@
   }
 
   function escapeHtml(str){
-    return String(str).replace(/[&<>\
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // ---------- Recipe form ----------
+  const recipeOverlay = document.getElementById('recipeOverlay');
+  function openRecipeForm(id){
+    editingRecipeId = id || null;
+    document.getElementById('ingredientRows').innerHTML = '';
+    document.getElementById('stepRows').innerHTML = '';
+    document.getElementById('deleteRecipeBtn').style.display = id ? 'block' : 'none';
+
+    if(id){
+      const r = recipes.find(x=>x.id===id);
+      document.getElementById('recipeFormTitle').textContent = 'Edit recipe';
+      document.getElementById('rTitle').value = r.title || '';
+      document.getElementById('rTime').value = r.time || '';
+      document.getElementById('rServings').value = r.servings || '';
+      document.getElementById('rCategory').value = r.category || 'Other';
+      document.getElementById('rTags').value = (r.tags||[]).join(', ');
+      document.getElementById('rNotes').value = r.notes || '';
+      (r.ingredients||[]).forEach(i=>addIngredientRow(i.text));
+      (r.steps||[]).forEach(s=>addStepRow(s.text));
+      if((r.ingredients||[]).length===0) addIngredientRow();
+      if((r.steps||[]).length===0) addStepRow();
+    } else {
+      document.getElementById('recipeFormTitle').textContent = 'New recipe';
+      document.getElementById('rTitle').value = '';
+      document.getElementById('rTime').value = '';
+      document.getElementById('rServings').value = '';
+      document.getElementById('rCategory').value = 'Dinner';
+      document.getElementById('rTags').value = '';
+      document.getElementById('rNotes').value = '';
+      addIngredientRow();
+      addStepRow();
+    }
+    recipeOverlay.classList.add('show');
+    document.getElementById('rTitle').focus();
+  }
+  function closeRecipeForm(){ recipeOverlay.classList.remove('show'); }
+  document.getElementById('closeRecipeForm').addEventListener('click', closeRecipeForm);
+  document.getElementById('cancelRecipeForm').addEventListener('click', closeRecipeForm);
+  recipeOverlay.addEventListener('click', e=>{ if(e.target===recipeOverlay) closeRecipeForm(); });
+
+  function addIngredientRow(val){
+    const row = document.createElement('div');
+    row.className = 'dyn-row';
+    const rid = 'ing'+(ingId++);
+    row.innerHTML = `<input type="text" id="${rid}" placeholder="2 cups flour" value="${val?escapeHtml(val):''}"><button type="button" aria-label="Remove ingredient">&times;</button>`;
+    row.querySelector('button').addEventListener('click', ()=>row.remove());
+    document.getElementById('ingredientRows').appendChild(row);
+  }
+  function addStepRow(val){
+    const row = document.createElement('div');
+    row.className = 'dyn-row';
+    const rid = 'step'+(stepId++);
+    row.innerHTML = `<input type="text" id="${rid}" placeholder="Whisk dry ingredients together" value="${val?escapeHtml(val):''}"><button type="button" aria-label="Remove step">&times;</button>`;
+    row.querySelector('button').addEventListener('click', ()=>row.remove());
+    document.getElementById('stepRows').appendChild(row);
+  }
+  document.getElementById('addIngredient').addEventListener('click', ()=>addIngredientRow());
+  document.getElementById('addStep').addEventListener('click', ()=>addStepRow());
+
+  document.getElementById('saveRecipeBtn').addEventListener('click', async ()=>{
+    const title = document.getElementById('rTitle').value.trim();
+    if(!title){ document.getElementById('rTitle').focus(); showToast('Give your recipe a title first'); return; }
+    const tags = document.getElementById('rTags').value.split(',').map(t=>t.trim()).filter(Boolean);
+    const ingredients = Array.from(document.querySelectorAll('#ingredientRows input')).map(i=>i.value.trim()).filter(Boolean).map(text=>({text}));
+    const steps = Array.from(document.querySelectorAll('#stepRows input')).map(i=>i.value.trim()).filter(Boolean).map(text=>({text}));
+    const data = {
+      title,
+      category: document.getElementById('rCategory').value,
+      time: document.getElementById('rTime').value.trim(),
+      servings: document.getElementById('rServings').value.trim(),
+      tags, ingredients, steps,
+      notes: document.getElementById('rNotes').value.trim(),
+    };
+    if(editingRecipeId){
+      const r = recipes.find(x=>x.id===editingRecipeId);
+      Object.assign(r, data);
+    } else {
+      recipes.push(Object.assign({id: uid(), createdAt: Date.now()}, data));
+    }
+    await saveRecipes();
+    closeRecipeForm();
+    render();
+    showToast('Recipe saved');
+  });
+
+  document.getElementById('deleteRecipeBtn').addEventListener('click', async ()=>{
+    if(!confirm('Delete this recipe? This cannot be undone.')) return;
+    recipes = recipes.filter(r=>r.id!==editingRecipeId);
+    await saveRecipes();
+    closeRecipeForm();
+    render();
+    showToast('Recipe deleted');
+  });
+
+  // ---------- Recipe detail ----------
+  const recipeDetailOverlay = document.getElementById('recipeDetailOverlay');
+  let viewingRecipeId = null;
+  function openRecipeDetail(id){
+    viewingRecipeId = id;
+    const r = recipes.find(x=>x.id===id);
+    document.getElementById('dTitle').textContent = r.title;
+    const metaEl = document.getElementById('dMeta');
+    metaEl.innerHTML = `<span class="tag cat">${escapeHtml(r.category||'Other')}</span> ${r.time?`<span class="tag time">${escapeHtml(r.time)}</span>`:''} ${r.servings?`<span class="tag time">Serves ${escapeHtml(r.servings)}</span>`:''} ${(r.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}`;
+    document.getElementById('dIngredients').innerHTML = (r.ingredients||[]).map(i=>`<li>${escapeHtml(i.text)}</li>`).join('') || '<li style="color:var(--ink-soft)">None listed</li>';
+    document.getElementById('dSteps').innerHTML = (r.steps||[]).map(s=>`<li>${escapeHtml(s.text)}</li>`).join('') || '<li style="color:var(--ink-soft)">None listed</li>';
+    const notesSection = document.getElementById('dNotesSection');
+    if(r.notes){
+      notesSection.style.display='block';
+      document.getElementById('dNotes').textContent = r.notes;
+    } else {
+      notesSection.style.display='none';
+    }
+    recipeDetailOverlay.classList.add('show');
+  }
+  document.getElementById('closeRecipeDetail').addEventListener('click', ()=>recipeDetailOverlay.classList.remove('show'));
+  recipeDetailOverlay.addEventListener('click', e=>{ if(e.target===recipeDetailOverlay) recipeDetailOverlay.classList.remove('show'); });
+  document.getElementById('detailEditBtn').addEventListener('click', ()=>{
+    recipeDetailOverlay.classList.remove('show');
+    openRecipeForm(viewingRecipeId);
+  });
+  document.getElementById('detailDeleteBtn').addEventListener('click', async ()=>{
+    if(!confirm('Delete this recipe? This cannot be undone.')) return;
+    recipes = recipes.filter(r=>r.id!==viewingRecipeId);
+    await saveRecipes();
+    recipeDetailOverlay.classList.remove('show');
+    render();
+    showToast('Recipe deleted');
+  });
+
+  // ---------- Notes ----------
+  const noteOverlay = document.getElementById('noteOverlay');
+  function openNoteForm(id){
+    editingNoteId = id || null;
+    document.getElementById('deleteNoteBtn').style.display = id ? 'block' : 'none';
+    if(id){
+      const n = notes.find(x=>x.id===id);
+      document.getElementById('noteFormTitle').textContent = 'Edit note';
+      document.getElementById('nTitle').value = n.title || '';
+      document.getElementById('nContent').value = n.content || '';
+    } else {
+      document.getElementById('noteFormTitle').textContent = 'New note';
+      document.getElementById('nTitle').value = '';
+      document.getElementById('nContent').value = '';
+    }
+    noteOverlay.classList.add('show');
+    document.getElementById('nTitle').focus();
+  }
+  function closeNoteForm(){ noteOverlay.classList.remove('show'); }
+  document.getElementById('closeNoteForm').addEventListener('click', closeNoteForm);
+  document.getElementById('cancelNoteForm').addEventListener('click', closeNoteForm);
+  noteOverlay.addEventListener('click', e=>{ if(e.target===noteOverlay) closeNoteForm(); });
+
+  document.getElementById('saveNoteBtn').addEventListener('click', async ()=>{
+    const title = document.getElementById('nTitle').value.trim();
+    if(!title){ document.getElementById('nTitle').focus(); showToast('Give your note a title first'); return; }
+    const content = document.getElementById('nContent').value.trim();
+    if(editingNoteId){
+      const n = notes.find(x=>x.id===editingNoteId);
+      n.title = title; n.content = content;
+    } else {
+      notes.push({id: uid(), title, content, createdAt: Date.now()});
+    }
+    await saveNotes();
+    closeNoteForm();
+    render();
+    showToast('Note saved');
+  });
+  document.getElementById('deleteNoteBtn').addEventListener('click', async ()=>{
+    if(!confirm('Delete this note? This cannot be undone.')) return;
+    notes = notes.filter(n=>n.id!==editingNoteId);
+    await saveNotes();
+    closeNoteForm();
+    render();
+    showToast('Note deleted');
+  });
+
+  loadData();
+})();
+</script>
+</body>
+</html>
