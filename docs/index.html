@@ -370,8 +370,15 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
+  // ---- Supabase config: paste your own values here ----
+  const SUPABASE_URL = 'https://wygxwvncyaskmrtgvuhz.supabase.co/rest/v1/';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5Z3h3dm5jeWFza21ydGd2dWh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTQ0NzgsImV4cCI6MjEwMjg3MDQ3OH0.xjHNR13KQTs5zrGCzGL425uvPtGQ0VuHtyw4LwgTzkE';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // -------------------------------------------------------
+
   const CATEGORIES = ['Breakfast','Lunch','Dinner','Baking','Snacks','Drinks','Other'];
   let recipes = [];
   let notes = [];
@@ -397,23 +404,31 @@
 
   async function loadData(){
     try{
-      const r = await window.storage.get('recipes-data');
-      recipes = r ? JSON.parse(r.value) : [];
-    }catch(e){ recipes = []; }
-    try{
-      const n = await window.storage.get('notes-data');
-      notes = n ? JSON.parse(n.value) : [];
-    }catch(e){ notes = []; }
+      const { data, error } = await sb.from('kv_store').select('key, value').in('key', ['recipes-data','notes-data']);
+      if(error) throw error;
+      const recipesRow = data.find(r => r.key === 'recipes-data');
+      const notesRow = data.find(r => r.key === 'notes-data');
+      recipes = recipesRow ? recipesRow.value : [];
+      notes = notesRow ? notesRow.value : [];
+    }catch(e){
+      console.error(e);
+      showToast("Couldn't connect to Supabase. Check your URL and key.");
+      recipes = []; notes = [];
+    }
     render();
   }
 
   async function saveRecipes(){
-    try{ await window.storage.set('recipes-data', JSON.stringify(recipes)); }
-    catch(e){ showToast("Couldn't save. Try again."); }
+    try{
+      const { error } = await sb.from('kv_store').upsert({ key: 'recipes-data', value: recipes, updated_at: new Date().toISOString() });
+      if(error) throw error;
+    }catch(e){ console.error(e); showToast("Couldn't save. Check your connection."); }
   }
   async function saveNotes(){
-    try{ await window.storage.set('notes-data', JSON.stringify(notes)); }
-    catch(e){ showToast("Couldn't save. Try again."); }
+    try{
+      const { error } = await sb.from('kv_store').upsert({ key: 'notes-data', value: notes, updated_at: new Date().toISOString() });
+      if(error) throw error;
+    }catch(e){ console.error(e); showToast("Couldn't save. Check your connection."); }
   }
 
   // ---------- Tabs ----------
