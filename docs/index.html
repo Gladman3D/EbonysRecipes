@@ -112,6 +112,15 @@
   }
   .card:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(51,45,31,0.10);}
   .card .leaf{position:absolute;right:-10px;top:-10px;width:60px;height:60px;opacity:0.10;}
+  .card .photo{width:calc(100% + 40px);margin:-20px -20px 14px;height:140px;object-fit:cover;display:block;}
+  .card h3{padding-right:0;}
+  .photo-upload{border:1.5px dashed var(--line);border-radius:12px;padding:14px;text-align:center;background:#fff;cursor:pointer;position:relative;}
+  .photo-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .photo-upload .hint{color:var(--ink-soft);font-size:13px;}
+  .photo-preview-wrap{position:relative;margin-bottom:10px;}
+  .photo-preview-wrap img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;display:block;}
+  .photo-remove{position:absolute;top:8px;right:8px;background:rgba(51,45,31,0.65);color:#fff;border:none;border-radius:999px;width:26px;height:26px;cursor:pointer;font-size:15px;line-height:1;}
+  .detail-photo{width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-bottom:6px;}
   .card h3{margin:0 0 8px;font-size:19px;font-weight:600;color:var(--ink);padding-right:30px;}
   .card p.snippet{margin:0;color:var(--ink-soft);font-size:13.5px;line-height:1.5;flex:1;
     display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
@@ -299,6 +308,17 @@
       <input type="text" id="rTags" placeholder="comfort food, freezer friendly">
     </div>
     <div class="field">
+      <label>Photo</label>
+      <div id="photoPreviewWrap" class="photo-preview-wrap" style="display:none;">
+        <img id="photoPreviewImg" src="">
+        <button type="button" class="photo-remove" id="removePhotoBtn" aria-label="Remove photo">&times;</button>
+      </div>
+      <div class="photo-upload" id="photoUploadBox">
+        <span class="hint">Tap to add a photo of the finished dish</span>
+        <input type="file" id="rPhotoInput" accept="image/*">
+      </div>
+    </div>
+    <div class="field">
       <label>Ingredients</label>
       <div id="ingredientRows"></div>
       <div class="add-line" id="addIngredient">+ add ingredient</div>
@@ -327,6 +347,7 @@
     <div class="detail-header">
       <h2 id="dTitle" style="margin-right:20px;"></h2>
     </div>
+    <img id="dPhoto" class="detail-photo" style="display:none;" src="">
     <div id="dMeta" style="margin-top:8px;"></div>
     <div class="detail-section">
       <h4>Ingredients</h4>
@@ -462,7 +483,7 @@
     card.className = 'card';
     const snippet = (r.notes || (r.ingredients||[]).map(i=>i.text).join(', ')) || '';
     card.innerHTML = `
-      <svg class="leaf" viewBox="0 0 64 64"><use href="#lily-bloom"/></svg>
+      ${r.photo ? `<img class="photo" src="${r.photo}">` : `<svg class="leaf" viewBox="0 0 64 64"><use href="#lily-bloom"/></svg>`}
       <h3>${escapeHtml(r.title)}</h3>
       <p class="snippet">${escapeHtml(snippet)}</p>
       <div class="meta">
@@ -570,6 +591,60 @@
 
   // ---------- Recipe form ----------
   const recipeOverlay = document.getElementById('recipeOverlay');
+  let currentPhotoDataUrl = null;
+
+  function resizeImage(file, maxDim, quality){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onload = e=>{
+        const img = new Image();
+        img.onload = ()=>{
+          let { width, height } = img;
+          if(width > maxDim || height > maxDim){
+            if(width > height){ height = Math.round(height * (maxDim / width)); width = maxDim; }
+            else { width = Math.round(width * (maxDim / height)); height = maxDim; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function setPhotoPreview(dataUrl){
+    currentPhotoDataUrl = dataUrl;
+    const wrap = document.getElementById('photoPreviewWrap');
+    const box = document.getElementById('photoUploadBox');
+    if(dataUrl){
+      document.getElementById('photoPreviewImg').src = dataUrl;
+      wrap.style.display = 'block';
+      box.style.display = 'none';
+    } else {
+      wrap.style.display = 'none';
+      box.style.display = 'block';
+    }
+  }
+
+  document.getElementById('rPhotoInput').addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    try{
+      const resized = await resizeImage(file, 1000, 0.82);
+      setPhotoPreview(resized);
+    }catch(err){
+      console.error(err);
+      showToast("Couldn't read that image, try another.");
+    }
+    e.target.value = '';
+  });
+  document.getElementById('removePhotoBtn').addEventListener('click', ()=> setPhotoPreview(null));
+
   function openRecipeForm(id){
     editingRecipeId = id || null;
     document.getElementById('ingredientRows').innerHTML = '';
@@ -585,6 +660,7 @@
       document.getElementById('rCategory').value = r.category || 'Other';
       document.getElementById('rTags').value = (r.tags||[]).join(', ');
       document.getElementById('rNotes').value = r.notes || '';
+      setPhotoPreview(r.photo || null);
       (r.ingredients||[]).forEach(i=>addIngredientRow(i.text));
       (r.steps||[]).forEach(s=>addStepRow(s.text));
       if((r.ingredients||[]).length===0) addIngredientRow();
@@ -597,6 +673,7 @@
       document.getElementById('rCategory').value = 'Dinner';
       document.getElementById('rTags').value = '';
       document.getElementById('rNotes').value = '';
+      setPhotoPreview(null);
       addIngredientRow();
       addStepRow();
     }
@@ -640,6 +717,7 @@
       servings: document.getElementById('rServings').value.trim(),
       tags, ingredients, steps,
       notes: document.getElementById('rNotes').value.trim(),
+      photo: currentPhotoDataUrl || null,
     };
     if(editingRecipeId){
       const r = recipes.find(x=>x.id===editingRecipeId);
@@ -669,6 +747,9 @@
     viewingRecipeId = id;
     const r = recipes.find(x=>x.id===id);
     document.getElementById('dTitle').textContent = r.title;
+    const dPhoto = document.getElementById('dPhoto');
+    if(r.photo){ dPhoto.src = r.photo; dPhoto.style.display = 'block'; }
+    else { dPhoto.style.display = 'none'; }
     const metaEl = document.getElementById('dMeta');
     metaEl.innerHTML = `<span class="tag cat">${escapeHtml(r.category||'Other')}</span> ${r.time?`<span class="tag time">${escapeHtml(r.time)}</span>`:''} ${r.servings?`<span class="tag time">Serves ${escapeHtml(r.servings)}</span>`:''} ${(r.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}`;
     document.getElementById('dIngredients').innerHTML = (r.ingredients||[]).map(i=>`<li>${escapeHtml(i.text)}</li>`).join('') || '<li style="color:var(--ink-soft)">None listed</li>';
