@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lily & Loam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F1EADA;
+    --cream-deep:#E7DEC8;
+    --card:#FBF8EF;
+    --ink:#332D1F;
+    --ink-soft:#746A54;
+    --moss:#6E7B4F;
+    --moss-dark:#4C5834;
+    --moss-pale:#DCE3C7;
+    --plum:#93415B;
+    --plum-dark:#6C2C42;
+    --plum-pale:#EFDDE2;
+    --gold:#C69A2E;
+    --line:#DED0AC;
+    --shadow: 0 1px 2px rgba(51,45,31,0.06);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    background-image:
+      radial-gradient(circle at 8% 12%, rgba(110,123,79,0.07), transparent 40%),
+      radial-gradient(circle at 92% 85%, rgba(147,65,91,0.06), transparent 42%);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{font-family:'Fraunces', serif;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px 80px;}
+
+  /* header */
+  header.top{
+    padding:44px 24px 28px;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:20px;
+    flex-wrap:wrap;
+    max-width:1080px;margin:0 auto;
+  }
+  .brand{display:flex;align-items:center;gap:16px;}
+  .brand svg{width:52px;height:62px;flex-shrink:0;}
+  .brand-text h1{font-size:30px;font-weight:600;margin:0;line-height:1.05;color:var(--ink);}
+  .brand-text p{margin:4px 0 0;color:var(--ink-soft);font-size:14px;font-style:italic;font-family:'Fraunces',serif;}
+
+  /* toolbar */
+  .toolbar{
+    max-width:1080px;margin:0 auto;padding:0 24px;
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    margin-bottom:22px;
+  }
+  .tabs{display:flex;gap:6px;background:var(--cream-deep);padding:4px;border-radius:999px;}
+  .tab{
+    border:none;background:transparent;padding:9px 20px;border-radius:999px;
+    font-family:'Work Sans';font-size:14px;font-weight:600;color:var(--ink-soft);cursor:pointer;
+    transition:background .18s ease, color .18s ease;
+  }
+  .tab.active{background:var(--card);color:var(--plum-dark);box-shadow:var(--shadow);}
+  .search-wrap{position:relative;flex:1;min-width:180px;}
+  .search-wrap input{
+    width:100%;padding:10px 14px 10px 38px;border-radius:999px;border:1px solid var(--line);
+    background:var(--card);font-family:'Work Sans';font-size:14px;color:var(--ink);
+  }
+  .search-wrap input:focus{outline:2px solid var(--moss);outline-offset:1px;}
+  .search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--ink-soft);}
+  .btn-add{
+    border:none;background:var(--plum);color:#fff;padding:10px 20px;border-radius:999px;
+    font-family:'Work Sans';font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:7px;
+    box-shadow:var(--shadow); transition:background .15s ease, transform .1s ease;
+    white-space:nowrap;
+  }
+  .btn-add:hover{background:var(--plum-dark);}
+  .btn-add:active{transform:scale(0.97);}
+  .btn-scan{background:var(--moss);}
+  .btn-scan:hover{background:var(--moss-dark);}
+  .btn-scan[disabled]{opacity:0.65;cursor:default;}
+
+  /* tag chips */
+  .chips{max-width:1080px;margin:0 auto 22px;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap;}
+  .chip{
+    border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
+    padding:6px 14px;border-radius:999px;font-size:13px;cursor:pointer;font-family:'Work Sans';font-weight:500;
+    transition:all .15s ease;
+  }
+  .chip.active{background:var(--moss);border-color:var(--moss);color:#fff;}
+
+  .section-heading{
+    max-width:1080px;margin:30px auto 14px;padding:0 24px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .section-heading svg{width:22px;height:26px;flex-shrink:0;}
+  .section-heading h2{font-size:19px;font-weight:600;margin:0;color:var(--plum-dark);}
+  .section-heading .count{color:var(--ink-soft);font-size:13px;font-family:'Work Sans';}
+  .section-heading .rule{flex:1;height:1px;background:var(--line);}
+  .tag.cat{background:var(--plum-pale);color:var(--plum-dark);}
+
+  /* grid */
+  .grid{
+    max-width:1080px;margin:0 auto;padding:0 24px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;
+  }
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;cursor:pointer;box-shadow:var(--shadow);position:relative;overflow:hidden;
+    transition:transform .15s ease, box-shadow .15s ease;
+    display:flex;flex-direction:column;min-height:150px;
+  }
+  .card:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(51,45,31,0.10);}
+  .card .leaf{position:absolute;right:-10px;top:-10px;width:60px;height:60px;opacity:0.10;}
+  .card .photo{width:calc(100% + 40px);margin:-20px -20px 14px;height:140px;object-fit:cover;display:block;}
+  .card h3{padding-right:0;}
+  .photo-upload{border:1.5px dashed var(--line);border-radius:12px;padding:14px;text-align:center;background:#fff;cursor:pointer;position:relative;}
+  .photo-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .photo-upload .hint{color:var(--ink-soft);font-size:13px;}
+  .photo-preview-wrap{position:relative;margin-bottom:10px;}
+  .photo-preview-wrap img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;display:block;}
+  .photo-remove{position:absolute;top:8px;right:8px;background:rgba(51,45,31,0.65);color:#fff;border:none;border-radius:999px;width:26px;height:26px;cursor:pointer;font-size:15px;line-height:1;}
+  .detail-photo{width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-bottom:6px;}
+  .card h3{margin:0 0 8px;font-size:19px;font-weight:600;color:var(--ink);padding-right:30px;}
+  .card p.snippet{margin:0;color:var(--ink-soft);font-size:13.5px;line-height:1.5;flex:1;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .card .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+  .tag{background:var(--moss-pale);color:var(--moss-dark);font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;}
+  .tag.time{background:var(--plum-pale);color:var(--plum-dark);}
+  .note-card{background:#FCF3D9;}
+  .note-card::before{
+    content:"";position:absolute;top:0;left:22px;width:26px;height:14px;
+    background:rgba(147,65,91,0.18);border-radius:0 0 3px 3px;
+  }
+
+  /* empty state */
+  .empty{
+    max-width:1080px;margin:40px auto;padding:60px 24px;text-align:center;
+  }
+  .empty svg{width:100px;height:100px;opacity:0.5;margin-bottom:14px;}
+  .empty h2{margin:0 0 8px;font-size:22px;color:var(--ink);}
+  .empty p{color:var(--ink-soft);margin:0 0 20px;font-size:14.5px;}
+
+  /* modal */
+  .overlay{
+    position:fixed;inset:0;background:rgba(51,45,31,0.42);
+    display:none;align-items:flex-start;justify-content:center;
+    padding:5vh 20px;z-index:100;overflow-y:auto;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--card);border-radius:18px;max-width:620px;width:100%;
+    padding:32px;box-shadow:0 20px 50px rgba(51,45,31,0.25);
+    animation:rise .22s ease;margin-bottom:5vh;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  .modal h2{margin:0 0 4px;font-size:24px;}
+  .modal .close{
+    float:right;border:none;background:none;font-size:22px;cursor:pointer;color:var(--ink-soft);
+    line-height:1;padding:4px;
+  }
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em;}
+  .field input[type=text], .field input[type=number], .field textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+    font-family:'Work Sans';font-size:14.5px;color:var(--ink);background:#fff;
+  }
+  .field input:focus, .field textarea:focus{outline:2px solid var(--moss);outline-offset:1px;}
+  .field textarea{resize:vertical;min-height:70px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .dyn-row{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
+  .dyn-row input{flex:1;}
+  .dyn-row button, .add-line{
+    border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:17px;padding:2px 6px;border-radius:6px;
+  }
+  .dyn-row button:hover{color:var(--plum);}
+  .add-line{color:var(--moss-dark);font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:5px;padding:4px 0;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;}
+  .btn-secondary{border:1px solid var(--line);background:transparent;color:var(--ink-soft);padding:10px 18px;border-radius:999px;font-weight:600;font-size:14px;cursor:pointer;font-family:'Work Sans';}
+  .btn-primary{border:none;background:var(--plum);color:#fff;padding:10px 22px;border-radius:999px;font-weight:600;font-size:14px;cursor:pointer;font-family:'Work Sans';}
+  .btn-primary:hover{background:var(--plum-dark);}
+  .btn-danger{border:none;background:transparent;color:#a4425b;font-weight:600;font-size:13.5px;cursor:pointer;font-family:'Work Sans';}
+
+  /* detail view */
+  .detail-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .detail-header .tag{margin-right:6px;}
+  .detail-section{margin-top:18px;}
+  .detail-section h4{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--moss-dark);font-weight:700;}
+  .detail-section ul{margin:0;padding-left:20px;color:var(--ink);font-size:14.5px;line-height:1.7;}
+  .detail-section ol{margin:0;padding-left:20px;color:var(--ink);font-size:14.5px;line-height:1.8;}
+  .detail-notes{white-space:pre-wrap;font-size:14.5px;color:var(--ink);line-height:1.7;}
+
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(12px);
+    background:var(--ink);color:var(--cream);padding:10px 20px;border-radius:999px;font-size:13.5px;
+    opacity:0;transition:opacity .2s ease, transform .2s ease;pointer-events:none;z-index:200;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:520px){
+    .row2{grid-template-columns:1fr;}
+    header.top{padding:30px 18px 20px;}
+    .modal{padding:22px;}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute;overflow:hidden;">
+  <defs>
+    <symbol id="lily-bloom" viewBox="0 0 64 64">
+      <g fill="none">
+        <g stroke="#93415B" stroke-width="1.6" stroke-linejoin="round" fill="#93415B" fill-opacity="0.08">
+          <path d="M32,32 C27,23 25,10 32,3 C39,10 37,23 32,32 Z"/>
+          <path d="M32,32 C27,23 25,10 32,3 C39,10 37,23 32,32 Z" transform="rotate(60 32 32)"/>
+          <path d="M32,32 C27,23 25,10 32,3 C39,10 37,23 32,32 Z" transform="rotate(120 32 32)"/>
+          <path d="M32,32 C27,23 25,10 32,3 C39,10 37,23 32,32 Z" transform="rotate(180 32 32)"/>
+          <path d="M32,32 C27,23 25,10 32,3 C39,10 37,23 32,32 Z" transform="rotate(240 32 32)"/>
+          <path d="M32,32 C27,23 25,10 32,3 C39,10 37,23 32,32 Z" transform="rotate(300 32 32)"/>
+        </g>
+        <circle cx="32" cy="32" r="3.4" fill="#C69A2E" stroke="none"/>
+        <g stroke="#C69A2E" stroke-width="1.3" stroke-linecap="round">
+          <path d="M32,32 L24,26"/><circle cx="23" cy="25" r="1.3" fill="#C69A2E" stroke="none"/>
+          <path d="M32,32 L40,26"/><circle cx="41" cy="25" r="1.3" fill="#C69A2E" stroke="none"/>
+          <path d="M32,32 L32,42"/><circle cx="32" cy="43" r="1.3" fill="#C69A2E" stroke="none"/>
+        </g>
+      </g>
+    </symbol>
+    <symbol id="lily-sprig" viewBox="0 0 100 120">
+      <path d="M50,118 C50,90 46,60 50,40" stroke="#4C5834" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M50,88 C40,84 30,86 24,78" stroke="#6E7B4F" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M50,100 C60,96 68,98 76,92" stroke="#6E7B4F" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <use href="#lily-bloom" x="18" y="38" width="34" height="34" transform="rotate(-18 35 55)"/>
+      <use href="#lily-bloom" x="46" y="0" width="40" height="40" transform="rotate(10 66 20)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 100 120"><use href="#lily-sprig"/></svg>
+    <div class="brand-text">
+      <h1>Lily &amp; Loam</h1>
+      <p>Recipes and notes worth keeping</p>
+    </div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="tabs">
+    <button class="tab active" data-tab="recipes">Recipes</button>
+    <button class="tab" data-tab="notes">Notes</button>
+  </div>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input type="text" id="searchInput" placeholder="Search your recipes...">
+  </div>
+  <button class="btn-add btn-scan" id="scanBtn">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    <span id="scanBtnLabel">Scan recipe</span>
+  </button>
+  <input type="file" id="scanInput" accept="image/*" capture="environment" style="display:none;">
+  <button class="btn-add" id="addBtn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
+    <span id="addBtnLabel">New recipe</span>
+  </button>
+</div>
+
+<div class="chips" id="tagChips"></div>
+
+<div class="grid" id="grid"></div>
+
+<div class="empty" id="emptyState" style="display:none;">
+  <svg viewBox="0 0 64 64"><use href="#lily-bloom"/></svg>
+  <h2 id="emptyTitle">No recipes yet</h2>
+  <p id="emptyBody">Add the first one and start building your collection.</p>
+  <button class="btn-primary" id="emptyAddBtn">Add recipe</button>
+</div>
+
+<!-- Recipe form modal -->
+<div class="overlay" id="recipeOverlay">
+  <div class="modal">
+    <button class="close" id="closeRecipeForm">&times;</button>
+    <h2 id="recipeFormTitle">New recipe</h2>
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="rTitle" placeholder="Sunday morning pancakes">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Time</label>
+        <input type="text" id="rTime" placeholder="30 min">
+      </div>
+      <div class="field">
+        <label>Servings</label>
+        <input type="text" id="rServings" placeholder="4">
+      </div>
+    </div>
+    <div class="field">
+      <label>Category</label>
+      <select id="rCategory" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-family:'Work Sans';font-size:14.5px;color:var(--ink);background:#fff;">
+        <option value="Breakfast">Breakfast</option>
+        <option value="Lunch">Lunch</option>
+        <option value="Dinner">Dinner</option>
+        <option value="Baking">Baking</option>
+        <option value="Snacks">Snacks</option>
+        <option value="Drinks">Drinks</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Tags (comma separated)</label>
+      <input type="text" id="rTags" placeholder="comfort food, freezer friendly">
+    </div>
+    <div class="field">
+      <label>Photo</label>
+      <div id="photoPreviewWrap" class="photo-preview-wrap" style="display:none;">
+        <img id="photoPreviewImg" src="">
+        <button type="button" class="photo-remove" id="removePhotoBtn" aria-label="Remove photo">&times;</button>
+      </div>
+      <div class="photo-upload" id="photoUploadBox">
+        <span class="hint">Tap to add a photo of the finished dish</span>
+        <input type="file" id="rPhotoInput" accept="image/*">
+      </div>
+    </div>
+    <div class="field">
+      <label>Ingredients</label>
+      <div id="ingredientRows"></div>
+      <div class="add-line" id="addIngredient">+ add ingredient</div>
+    </div>
+    <div class="field">
+      <label>Steps</label>
+      <div id="stepRows"></div>
+      <div class="add-line" id="addStep">+ add step</div>
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="rNotes" placeholder="Anything you'd tell a friend making this..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-danger" id="deleteRecipeBtn" style="display:none;margin-right:auto;">Delete recipe</button>
+      <button class="btn-secondary" id="cancelRecipeForm">Cancel</button>
+      <button class="btn-primary" id="saveRecipeBtn">Save recipe</button>
+    </div>
+  </div>
+</div>
+
+<!-- Recipe detail modal -->
+<div class="overlay" id="recipeDetailOverlay">
+  <div class="modal">
+    <button class="close" id="closeRecipeDetail">&times;</button>
+    <div class="detail-header">
+      <h2 id="dTitle" style="margin-right:20px;"></h2>
+    </div>
+    <img id="dPhoto" class="detail-photo" style="display:none;" src="">
+    <div id="dMeta" style="margin-top:8px;"></div>
+    <div class="detail-section">
+      <h4>Ingredients</h4>
+      <ul id="dIngredients"></ul>
+    </div>
+    <div class="detail-section">
+      <h4>Steps</h4>
+      <ol id="dSteps"></ol>
+    </div>
+    <div class="detail-section" id="dNotesSection">
+      <h4>Notes</h4>
+      <div class="detail-notes" id="dNotes"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-danger" id="detailDeleteBtn" style="margin-right:auto;">Delete</button>
+      <button class="btn-secondary" id="detailEditBtn">Edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Note form modal -->
+<div class="overlay" id="noteOverlay">
+  <div class="modal">
+    <button class="close" id="closeNoteForm">&times;</button>
+    <h2 id="noteFormTitle">New note</h2>
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="nTitle" placeholder="Kitchen notes">
+    </div>
+    <div class="field">
+      <label>Content</label>
+      <textarea id="nContent" style="min-height:160px;" placeholder="Write it down before you forget..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-danger" id="deleteNoteBtn" style="display:none;margin-right:auto;">Delete note</button>
+      <button class="btn-secondary" id="cancelNoteForm">Cancel</button>
+      <button class="btn-primary" id="saveNoteBtn">Save note</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+<script>
+(function(){
+  // ---- Supabase config: paste your own values here ----
+  const SUPABASE_URL = 'https://wygxwvncyaskmrtgvuhz.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5Z3h3dm5jeWFza21ydGd2dWh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTQ0NzgsImV4cCI6MjEwMjg3MDQ3OH0.xjHNR13KQTs5zrGCzGL425uvPtGQ0VuHtyw4LwgTzkE';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // -------------------------------------------------------
+
+  const CATEGORIES = ['Breakfast','Lunch','Dinner','Baking','Snacks','Drinks','Other'];
+  let recipes = [];
+  let notes = [];
+  let activeTab = 'recipes';
+  let activeCategory = 'All';
+  let editingRecipeId = null;
+  let editingNoteId = null;
+  let ingId = 0, stepId = 0;
+
+  const grid = document.getElementById('grid');
+  const emptyState = document.getElementById('emptyState');
+  const tagChips = document.getElementById('tagChips');
+  const searchInput = document.getElementById('searchInput');
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 1800);
+  }
+
+  async function loadData(){
+    try{
+      const { data, error } = await sb.from('kv_store').select('key, value').in('key', ['recipes-data','notes-data']);
+      if(error) throw error;
+      const recipesRow = data.find(r => r.key === 'recipes-data');
+      const notesRow = data.find(r => r.key === 'notes-data');
+      recipes = recipesRow ? recipesRow.value : [];
+      notes = notesRow ? notesRow.value : [];
+    }catch(e){
+      console.error(e);
+      showToast("Couldn't connect to Supabase. Check your URL and key.");
+      recipes = []; notes = [];
+    }
+    render();
+  }
+
+  async function saveRecipes(){
+    try{
+      const { error } = await sb.from('kv_store').upsert({ key: 'recipes-data', value: recipes, updated_at: new Date().toISOString() });
+      if(error) throw error;
+    }catch(e){ console.error(e); showToast("Couldn't save. Check your connection."); }
+  }
+  async function saveNotes(){
+    try{
+      const { error } = await sb.from('kv_store').upsert({ key: 'notes-data', value: notes, updated_at: new Date().toISOString() });
+      if(error) throw error;
+    }catch(e){ console.error(e); showToast("Couldn't save. Check your connection."); }
+  }
+
+  // ---------- Tabs ----------
+  document.querySelectorAll('.tab').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      activeTab = btn.dataset.tab;
+      activeCategory = 'All';
+      searchInput.placeholder = activeTab === 'recipes' ? 'Search your recipes...' : 'Search your notes...';
+      document.getElementById('addBtnLabel').textContent = activeTab === 'recipes' ? 'New recipe' : 'New note';
+      render();
+    });
+  });
+
+  document.getElementById('addBtn').addEventListener('click', ()=>{
+    if(activeTab === 'recipes') openRecipeForm(); else openNoteForm();
+  });
+  document.getElementById('scanBtn').addEventListener('click', ()=>{
+    document.getElementById('scanInput').click();
+  });
+  document.getElementById('scanInput').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(file) scanRecipePhoto(file);
+    e.target.value = '';
+  });
+  document.getElementById('emptyAddBtn').addEventListener('click', ()=>{
+    if(activeTab === 'recipes') openRecipeForm(); else openNoteForm();
+  });
+  searchInput.addEventListener('input', render);
+
+  // ---------- Render ----------
+  function categoriesInUse(){
+    return CATEGORIES.filter(cat => recipes.some(r => (r.category||'Other') === cat));
+  }
+
+  function recipeCard(r){
+    const card = document.createElement('div');
+    card.className = 'card';
+    const snippet = (r.notes || (r.ingredients||[]).map(i=>i.text).join(', ')) || '';
+    card.innerHTML = `
+      ${r.photo ? `<img class="photo" src="${r.photo}">` : `<svg class="leaf" viewBox="0 0 64 64"><use href="#lily-bloom"/></svg>`}
+      <h3>${escapeHtml(r.title)}</h3>
+      <p class="snippet">${escapeHtml(snippet)}</p>
+      <div class="meta">
+        <span class="tag cat">${escapeHtml(r.category||'Other')}</span>
+        ${r.time ? `<span class="tag time">${escapeHtml(r.time)}</span>` : ''}
+        ${(r.tags||[]).slice(0,3).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}
+      </div>
+    `;
+    card.addEventListener('click', ()=>openRecipeDetail(r.id));
+    return card;
+  }
+
+  function render(){
+    const q = searchInput.value.trim().toLowerCase();
+    grid.innerHTML = '';
+
+    if(activeTab === 'recipes'){
+      const usedCats = categoriesInUse();
+      tagChips.innerHTML = '';
+      if(usedCats.length){
+        tagChips.style.display = 'flex';
+        const allChip = document.createElement('button');
+        allChip.className = 'chip' + (activeCategory === 'All' ? ' active' : '');
+        allChip.textContent = 'All';
+        allChip.addEventListener('click', ()=>{ activeCategory = 'All'; render(); });
+        tagChips.appendChild(allChip);
+        usedCats.forEach(cat=>{
+          const c = document.createElement('button');
+          c.className = 'chip' + (activeCategory === cat ? ' active' : '');
+          c.textContent = cat;
+          c.addEventListener('click', ()=>{ activeCategory = activeCategory === cat ? 'All' : cat; render(); });
+          tagChips.appendChild(c);
+        });
+      } else {
+        tagChips.style.display = 'none';
+      }
+
+      let list = recipes.filter(r=>{
+        const matchesQ = !q || r.title.toLowerCase().includes(q) || (r.tags||[]).some(t=>t.toLowerCase().includes(q));
+        const matchesCat = activeCategory === 'All' || (r.category||'Other') === activeCategory;
+        return matchesQ && matchesCat;
+      });
+
+      if(list.length === 0){
+        emptyState.style.display = 'block';
+        document.getElementById('emptyTitle').textContent = recipes.length ? 'Nothing matches' : 'No recipes yet';
+        document.getElementById('emptyBody').textContent = recipes.length ? 'Try a different search or category.' : 'Add the first one and start building your collection.';
+        grid.style.display = 'none';
+      } else {
+        emptyState.style.display = 'none';
+        grid.style.display = 'grid';
+
+        if(activeCategory === 'All' && !q){
+          grid.style.display = 'block';
+          CATEGORIES.forEach(cat=>{
+            const inCat = list.filter(r => (r.category||'Other') === cat).slice().reverse();
+            if(inCat.length === 0) return;
+            const heading = document.createElement('div');
+            heading.className = 'section-heading';
+            heading.innerHTML = `<svg viewBox="0 0 64 64"><use href="#lily-bloom"/></svg><h2>${cat}</h2><span class="count">${inCat.length}</span><span class="rule"></span>`;
+            grid.appendChild(heading);
+            const row = document.createElement('div');
+            row.className = 'grid';
+            row.style.padding = '0 24px';
+            row.style.maxWidth = '1080px';
+            row.style.margin = '0 auto';
+            inCat.forEach(r => row.appendChild(recipeCard(r)));
+            grid.appendChild(row);
+          });
+        } else {
+          grid.style.display = 'grid';
+          list.slice().reverse().forEach(r => grid.appendChild(recipeCard(r)));
+        }
+      }
+    } else {
+      tagChips.style.display = 'none';
+      let list = notes.filter(n=>{
+        return !q || n.title.toLowerCase().includes(q) || (n.content||'').toLowerCase().includes(q);
+      });
+      if(list.length === 0){
+        emptyState.style.display = 'block';
+        document.getElementById('emptyTitle').textContent = notes.length ? 'Nothing matches' : 'No notes yet';
+        document.getElementById('emptyBody').textContent = notes.length ? 'Try a different search.' : 'Jot down kitchen tips, substitutions, whatever comes to mind.';
+        grid.style.display = 'none';
+      } else {
+        emptyState.style.display = 'none';
+        grid.style.display = 'grid';
+        list.slice().reverse().forEach(n=>{
+          const card = document.createElement('div');
+          card.className = 'card note-card';
+          card.innerHTML = `
+            <h3>${escapeHtml(n.title)}</h3>
+            <p class="snippet">${escapeHtml(n.content||'')}</p>
+          `;
+          card.addEventListener('click', ()=>openNoteForm(n.id));
+          grid.appendChild(card);
+        });
+      }
+    }
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // ---------- Recipe form ----------
+  const recipeOverlay = document.getElementById('recipeOverlay');
+  let currentPhotoDataUrl = null;
+
+  function resizeImage(file, maxDim, quality){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onload = e=>{
+        const img = new Image();
+        img.onload = ()=>{
+          let { width, height } = img;
+          if(width > maxDim || height > maxDim){
+            if(width > height){ height = Math.round(height * (maxDim / width)); width = maxDim; }
+            else { width = Math.round(width * (maxDim / height)); height = maxDim; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function setPhotoPreview(dataUrl){
+    currentPhotoDataUrl = dataUrl;
+    const wrap = document.getElementById('photoPreviewWrap');
+    const box = document.getElementById('photoUploadBox');
+    if(dataUrl){
+      document.getElementById('photoPreviewImg').src = dataUrl;
+      wrap.style.display = 'block';
+      box.style.display = 'none';
+    } else {
+      wrap.style.display = 'none';
+      box.style.display = 'block';
+    }
+  }
+
+  document.getElementById('rPhotoInput').addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    try{
+      const resized = await resizeImage(file, 1000, 0.82);
+      setPhotoPreview(resized);
+    }catch(err){
+      console.error(err);
+      showToast("Couldn't read that image, try another.");
+    }
+    e.target.value = '';
+  });
+  document.getElementById('removePhotoBtn').addEventListener('click', ()=> setPhotoPreview(null));
+
+  // ---------- Scan recipe from photo ----------
+  const UNIT_WORDS = /\b(cups?|tbsp|tablespoons?|tsp|teaspoons?|oz|ounces?|lb|lbs|pounds?|g|grams?|kg|ml|l|liters?|pinch|cloves?|cans?|slices?|handful)\b/i;
+  const QTY_START = /^[\d½¼¾⅓⅔\.\-\/\s]*\d/;
+  const NUMBERED_LINE = /^\s*(\d+[\.\)]|step\s*\d+[:.]?)\s*/i;
+  const INGREDIENTS_HEADER = /^ingredients\b/i;
+  const STEPS_HEADER = /^(instructions|directions|method|steps)\b/i;
+
+  function parseRecipeText(raw){
+    const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+    let title = '';
+    let time = '';
+    let servings = '';
+    const ingredients = [];
+    const steps = [];
+    let section = 'hunting'; // hunting | ingredients | steps
+
+    for(let i=0;i<lines.length;i++){
+      const line = lines[i];
+
+      if(INGREDIENTS_HEADER.test(line)){ section = 'ingredients'; continue; }
+      if(STEPS_HEADER.test(line)){ section = 'steps'; continue; }
+
+      const timeMatch = line.match(/(\d+)\s*(min|minutes|hr|hrs|hours)/i);
+      if(timeMatch && !time) time = timeMatch[0];
+      const servesMatch = line.match(/serves\s*(\d+)|servings?:?\s*(\d+)|(\d+)\s*servings/i);
+      if(servesMatch && !servings) servings = (servesMatch[1]||servesMatch[2]||servesMatch[3]);
+
+      if(!title && section === 'hunting' && line.length < 70 && !QTY_START.test(line)){
+        title = line.replace(/^title:?\s*/i,'');
+        continue;
+      }
+
+      if(section === 'ingredients'){
+        ingredients.push(line.replace(NUMBERED_LINE,''));
+      } else if(section === 'steps'){
+        steps.push(line.replace(NUMBERED_LINE,''));
+      } else {
+        // no explicit headers found yet - guess by shape
+        if(NUMBERED_LINE.test(line) || line.length > 55){
+          steps.push(line.replace(NUMBERED_LINE,''));
+        } else if(QTY_START.test(line) || UNIT_WORDS.test(line)){
+          ingredients.push(line);
+        } else if(line !== title) {
+          steps.push(line);
+        }
+      }
+    }
+
+    return { title, time, servings, ingredients, steps };
+  }
+
+  async function scanRecipePhoto(file){
+    const btn = document.getElementById('scanBtn');
+    const label = document.getElementById('scanBtnLabel');
+    const prevLabel = label.textContent;
+    btn.disabled = true;
+    label.textContent = 'Reading photo…';
+    showToast('Reading your photo, this can take a moment...');
+    try{
+      const result = await Tesseract.recognize(file, 'eng');
+      const text = result.data.text || '';
+      if(!text.trim()){
+        showToast("Couldn't read any text in that photo. Try a clearer, well-lit shot.");
+        return;
+      }
+      const parsed = parseRecipeText(text);
+
+      openRecipeForm();
+      if(parsed.title) document.getElementById('rTitle').value = parsed.title;
+      if(parsed.time) document.getElementById('rTime').value = parsed.time;
+      if(parsed.servings) document.getElementById('rServings').value = parsed.servings;
+
+      document.getElementById('ingredientRows').innerHTML = '';
+      document.getElementById('stepRows').innerHTML = '';
+      (parsed.ingredients.length ? parsed.ingredients : ['']).forEach(t=>addIngredientRow(t));
+      (parsed.steps.length ? parsed.steps : ['']).forEach(t=>addStepRow(t));
+
+      showToast('Scanned — check everything over before saving');
+    }catch(err){
+      console.error(err);
+      showToast("Couldn't scan that photo. Try again or add it by hand.");
+    }finally{
+      btn.disabled = false;
+      label.textContent = prevLabel;
+    }
+  }
+
+  function openRecipeForm(id){
+    editingRecipeId = id || null;
+    document.getElementById('ingredientRows').innerHTML = '';
+    document.getElementById('stepRows').innerHTML = '';
+    document.getElementById('deleteRecipeBtn').style.display = id ? 'block' : 'none';
+
+    if(id){
+      const r = recipes.find(x=>x.id===id);
+      document.getElementById('recipeFormTitle').textContent = 'Edit recipe';
+      document.getElementById('rTitle').value = r.title || '';
+      document.getElementById('rTime').value = r.time || '';
+      document.getElementById('rServings').value = r.servings || '';
+      document.getElementById('rCategory').value = r.category || 'Other';
+      document.getElementById('rTags').value = (r.tags||[]).join(', ');
+      document.getElementById('rNotes').value = r.notes || '';
+      setPhotoPreview(r.photo || null);
+      (r.ingredients||[]).forEach(i=>addIngredientRow(i.text));
+      (r.steps||[]).forEach(s=>addStepRow(s.text));
+      if((r.ingredients||[]).length===0) addIngredientRow();
+      if((r.steps||[]).length===0) addStepRow();
+    } else {
+      document.getElementById('recipeFormTitle').textContent = 'New recipe';
+      document.getElementById('rTitle').value = '';
+      document.getElementById('rTime').value = '';
+      document.getElementById('rServings').value = '';
+      document.getElementById('rCategory').value = 'Dinner';
+      document.getElementById('rTags').value = '';
+      document.getElementById('rNotes').value = '';
+      setPhotoPreview(null);
+      addIngredientRow();
+      addStepRow();
+    }
+    recipeOverlay.classList.add('show');
+    document.getElementById('rTitle').focus();
+  }
+  function closeRecipeForm(){ recipeOverlay.classList.remove('show'); }
+  document.getElementById('closeRecipeForm').addEventListener('click', closeRecipeForm);
+  document.getElementById('cancelRecipeForm').addEventListener('click', closeRecipeForm);
+  recipeOverlay.addEventListener('click', e=>{ if(e.target===recipeOverlay) closeRecipeForm(); });
+
+  function addIngredientRow(val){
+    const row = document.createElement('div');
+    row.className = 'dyn-row';
+    const rid = 'ing'+(ingId++);
+    row.innerHTML = `<input type="text" id="${rid}" placeholder="2 cups flour" value="${val?escapeHtml(val):''}"><button type="button" aria-label="Remove ingredient">&times;</button>`;
+    row.querySelector('button').addEventListener('click', ()=>row.remove());
+    document.getElementById('ingredientRows').appendChild(row);
+  }
+  function addStepRow(val){
+    const row = document.createElement('div');
+    row.className = 'dyn-row';
+    const rid = 'step'+(stepId++);
+    row.innerHTML = `<input type="text" id="${rid}" placeholder="Whisk dry ingredients together" value="${val?escapeHtml(val):''}"><button type="button" aria-label="Remove step">&times;</button>`;
+    row.querySelector('button').addEventListener('click', ()=>row.remove());
+    document.getElementById('stepRows').appendChild(row);
+  }
+  document.getElementById('addIngredient').addEventListener('click', ()=>addIngredientRow());
+  document.getElementById('addStep').addEventListener('click', ()=>addStepRow());
+
+  document.getElementById('saveRecipeBtn').addEventListener('click', async ()=>{
+    const title = document.getElementById('rTitle').value.trim();
+    if(!title){ document.getElementById('rTitle').focus(); showToast('Give your recipe a title first'); return; }
+    const tags = document.getElementById('rTags').value.split(',').map(t=>t.trim()).filter(Boolean);
+    const ingredients = Array.from(document.querySelectorAll('#ingredientRows input')).map(i=>i.value.trim()).filter(Boolean).map(text=>({text}));
+    const steps = Array.from(document.querySelectorAll('#stepRows input')).map(i=>i.value.trim()).filter(Boolean).map(text=>({text}));
+    const data = {
+      title,
+      category: document.getElementById('rCategory').value,
+      time: document.getElementById('rTime').value.trim(),
+      servings: document.getElementById('rServings').value.trim(),
+      tags, ingredients, steps,
+      notes: document.getElementById('rNotes').value.trim(),
+      photo: currentPhotoDataUrl || null,
+    };
+    if(editingRecipeId){
+      const r = recipes.find(x=>x.id===editingRecipeId);
+      Object.assign(r, data);
+    } else {
+      recipes.push(Object.assign({id: uid(), createdAt: Date.now()}, data));
+    }
+    await saveRecipes();
+    closeRecipeForm();
+    render();
+    showToast('Recipe saved');
+  });
+
+  document.getElementById('deleteRecipeBtn').addEventListener('click', async ()=>{
+    if(!confirm('Delete this recipe? This cannot be undone.')) return;
+    recipes = recipes.filter(r=>r.id!==editingRecipeId);
+    await saveRecipes();
+    closeRecipeForm();
+    render();
+    showToast('Recipe deleted');
+  });
+
+  // ---------- Recipe detail ----------
+  const recipeDetailOverlay = document.getElementById('recipeDetailOverlay');
+  let viewingRecipeId = null;
+  function openRecipeDetail(id){
+    viewingRecipeId = id;
+    const r = recipes.find(x=>x.id===id);
+    document.getElementById('dTitle').textContent = r.title;
+    const dPhoto = document.getElementById('dPhoto');
+    if(r.photo){ dPhoto.src = r.photo; dPhoto.style.display = 'block'; }
+    else { dPhoto.style.display = 'none'; }
+    const metaEl = document.getElementById('dMeta');
+    metaEl.innerHTML = `<span class="tag cat">${escapeHtml(r.category||'Other')}</span> ${r.time?`<span class="tag time">${escapeHtml(r.time)}</span>`:''} ${r.servings?`<span class="tag time">Serves ${escapeHtml(r.servings)}</span>`:''} ${(r.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}`;
+    document.getElementById('dIngredients').innerHTML = (r.ingredients||[]).map(i=>`<li>${escapeHtml(i.text)}</li>`).join('') || '<li style="color:var(--ink-soft)">None listed</li>';
+    document.getElementById('dSteps').innerHTML = (r.steps||[]).map(s=>`<li>${escapeHtml(s.text)}</li>`).join('') || '<li style="color:var(--ink-soft)">None listed</li>';
+    const notesSection = document.getElementById('dNotesSection');
+    if(r.notes){
+      notesSection.style.display='block';
+      document.getElementById('dNotes').textContent = r.notes;
+    } else {
+      notesSection.style.display='none';
+    }
+    recipeDetailOverlay.classList.add('show');
+  }
+  document.getElementById('closeRecipeDetail').addEventListener('click', ()=>recipeDetailOverlay.classList.remove('show'));
+  recipeDetailOverlay.addEventListener('click', e=>{ if(e.target===recipeDetailOverlay) recipeDetailOverlay.classList.remove('show'); });
+  document.getElementById('detailEditBtn').addEventListener('click', ()=>{
+    recipeDetailOverlay.classList.remove('show');
+    openRecipeForm(viewingRecipeId);
+  });
+  document.getElementById('detailDeleteBtn').addEventListener('click', async ()=>{
+    if(!confirm('Delete this recipe? This cannot be undone.')) return;
+    recipes = recipes.filter(r=>r.id!==viewingRecipeId);
+    await saveRecipes();
+    recipeDetailOverlay.classList.remove('show');
+    render();
+    showToast('Recipe deleted');
+  });
+
+  // ---------- Notes ----------
+  const noteOverlay = document.getElementById('noteOverlay');
+  function openNoteForm(id){
+    editingNoteId = id || null;
+    document.getElementById('deleteNoteBtn').style.display = id ? 'block' : 'none';
+    if(id){
+      const n = notes.find(x=>x.id===id);
+      document.getElementById('noteFormTitle').textContent = 'Edit note';
+      document.getElementById('nTitle').value = n.title || '';
+      document.getElementById('nContent').value = n.content || '';
+    } else {
+      document.getElementById('noteFormTitle').textContent = 'New note';
+      document.getElementById('nTitle').value = '';
+      document.getElementById('nContent').value = '';
+    }
+    noteOverlay.classList.add('show');
+    document.getElementById('nTitle').focus();
+  }
+  function closeNoteForm(){ noteOverlay.classList.remove('show'); }
+  document.getElementById('closeNoteForm').addEventListener('click', closeNoteForm);
+  document.getElementById('cancelNoteForm').addEventListener('click', closeNoteForm);
+  noteOverlay.addEventListener('click', e=>{ if(e.target===noteOverlay) closeNoteForm(); });
+
+  document.getElementById('saveNoteBtn').addEventListener('click', async ()=>{
+    const title = document.getElementById('nTitle').value.trim();
+    if(!title){ document.getElementById('nTitle').focus(); showToast('Give your note a title first'); return; }
+    const content = document.getElementById('nContent').value.trim();
+    if(editingNoteId){
+      const n = notes.find(x=>x.id===editingNoteId);
+      n.title = title; n.content = content;
+    } else {
+      notes.push({id: uid(), title, content, createdAt: Date.now()});
+    }
+    await saveNotes();
+    closeNoteForm();
+    render();
+    showToast('Note saved');
+  });
+  document.getElementById('deleteNoteBtn').addEventListener('click', async ()=>{
+    if(!confirm('Delete this note? This cannot be undone.')) return;
+    notes = notes.filter(n=>n.id!==editingNoteId);
+    await saveNotes();
+    closeNoteForm();
+    render();
+    showToast('Note deleted');
+  });
+
+  loadData();
+})();
+</script>
+</body>
+</html>
