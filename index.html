@@ -671,7 +671,7 @@
     showToast('Reading your recipe page...');
     try{
       const image = await resizeImage(file, 1600, 0.85);
-      const { data, error } = await sb.functions.invoke('scan-recipe', { body: { image } });
+      const { data, error } = await sb.functions.invoke('quick-task', { body: { image } });
       if(error) throw error;
       if(!data || data.error) throw new Error((data && data.error) || 'No result');
 
