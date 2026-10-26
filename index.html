@@ -79,9 +79,9 @@
   }
   .btn-add:hover{background:var(--plum-dark);}
   .btn-add:active{transform:scale(0.97);}
-  .btn-scan{background:var(--moss);}
-  .btn-scan:hover{background:var(--moss-dark);}
-  .btn-scan[disabled]{opacity:0.65;cursor:default;}
+  .btn-ai{background:var(--moss);}
+  .btn-ai:hover{background:var(--moss-dark);}
+  .btn-ai[disabled]{opacity:0.65;cursor:default;}
 
   /* tag chips */
   .chips{max-width:1080px;margin:0 auto 22px;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap;}
@@ -116,14 +116,6 @@
   .card:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(51,45,31,0.10);}
   .card .leaf{position:absolute;right:-10px;top:-10px;width:60px;height:60px;opacity:0.10;}
   .card .photo{width:calc(100% + 40px);margin:-20px -20px 14px;height:140px;object-fit:cover;display:block;}
-  .card h3{padding-right:0;}
-  .photo-upload{border:1.5px dashed var(--line);border-radius:12px;padding:14px;text-align:center;background:#fff;cursor:pointer;position:relative;}
-  .photo-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-  .photo-upload .hint{color:var(--ink-soft);font-size:13px;}
-  .photo-preview-wrap{position:relative;margin-bottom:10px;}
-  .photo-preview-wrap img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;display:block;}
-  .photo-remove{position:absolute;top:8px;right:8px;background:rgba(51,45,31,0.65);color:#fff;border:none;border-radius:999px;width:26px;height:26px;cursor:pointer;font-size:15px;line-height:1;}
-  .detail-photo{width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-bottom:6px;}
   .card h3{margin:0 0 8px;font-size:19px;font-weight:600;color:var(--ink);padding-right:30px;}
   .card p.snippet{margin:0;color:var(--ink-soft);font-size:13.5px;line-height:1.5;flex:1;
     display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
@@ -186,12 +178,17 @@
 
   /* detail view */
   .detail-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
-  .detail-header .tag{margin-right:6px;}
+  .detail-photo{width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-bottom:6px;}
   .detail-section{margin-top:18px;}
   .detail-section h4{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--moss-dark);font-weight:700;}
-  .detail-section ul{margin:0;padding-left:20px;color:var(--ink);font-size:14.5px;line-height:1.7;}
-  .detail-section ol{margin:0;padding-left:20px;color:var(--ink);font-size:14.5px;line-height:1.8;}
+  .detail-section ul, .detail-section ol{margin:0;padding-left:20px;color:var(--ink);font-size:14.5px;line-height:1.7;}
   .detail-notes{white-space:pre-wrap;font-size:14.5px;color:var(--ink);line-height:1.7;}
+
+  .photo-upload{border:1.5px dashed var(--line);border-radius:12px;padding:14px;text-align:center;background:#fff;cursor:pointer;position:relative;}
+  .photo-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .photo-preview-wrap{position:relative;margin-bottom:10px;}
+  .photo-preview-wrap img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;display:block;}
+  .photo-remove{position:absolute;top:8px;right:8px;background:rgba(51,45,31,0.65);color:#fff;border:none;border-radius:999px;width:26px;height:26px;cursor:pointer;font-size:15px;line-height:1;}
 
   .toast{
     position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(12px);
@@ -199,12 +196,6 @@
     opacity:0;transition:opacity .2s ease, transform .2s ease;pointer-events:none;z-index:200;
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
-  @media (max-width:520px){
-    .row2{grid-template-columns:1fr;}
-    header.top{padding:30px 18px 20px;}
-    .modal{padding:22px;}
-  }
 </style>
 </head>
 <body>
@@ -222,11 +213,6 @@
           <path d="M32,32 C27,23 25,10 32,3 C39,10 37,23 32,32 Z" transform="rotate(300 32 32)"/>
         </g>
         <circle cx="32" cy="32" r="3.4" fill="#C69A2E" stroke="none"/>
-        <g stroke="#C69A2E" stroke-width="1.3" stroke-linecap="round">
-          <path d="M32,32 L24,26"/><circle cx="23" cy="25" r="1.3" fill="#C69A2E" stroke="none"/>
-          <path d="M32,32 L40,26"/><circle cx="41" cy="25" r="1.3" fill="#C69A2E" stroke="none"/>
-          <path d="M32,32 L32,42"/><circle cx="32" cy="43" r="1.3" fill="#C69A2E" stroke="none"/>
-        </g>
       </g>
     </symbol>
     <symbol id="lily-sprig" viewBox="0 0 100 120">
@@ -258,11 +244,10 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
     <input type="text" id="searchInput" placeholder="Search your recipes...">
   </div>
-  <button class="btn-add btn-scan" id="scanBtn">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-    <span id="scanBtnLabel">Scan recipe</span>
+  <button class="btn-add btn-ai" id="aiImportOpenBtn">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M7 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+    <span>Paste Recipe</span>
   </button>
-  <input type="file" id="scanInput" accept="image/*" style="display:none;">
   <button class="btn-add" id="addBtn">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
     <span id="addBtnLabel">New recipe</span>
@@ -270,7 +255,6 @@
 </div>
 
 <div class="chips" id="tagChips"></div>
-
 <div class="grid" id="grid"></div>
 
 <div class="empty" id="emptyState" style="display:none;">
@@ -278,6 +262,22 @@
   <h2 id="emptyTitle">No recipes yet</h2>
   <p id="emptyBody">Add the first one and start building your collection.</p>
   <button class="btn-primary" id="emptyAddBtn">Add recipe</button>
+</div>
+
+<!-- AI Paste Modal -->
+<div class="overlay" id="aiOverlay">
+  <div class="modal">
+    <button class="close" id="closeAiForm">&times;</button>
+    <h2>Paste Recipe Text</h2>
+    <p style="color:var(--ink-soft);font-size:14px;margin-bottom:14px;">Copy the text from any recipe website and paste it below. The AI will extract the ingredients and steps for you.</p>
+    <div class="field">
+      <textarea id="aiTextInput" style="min-height:220px;" placeholder="Paste ingredients and instructions here..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelAiForm">Cancel</button>
+      <button class="btn-primary" id="processAiBtn">Extract Recipe</button>
+    </div>
+  </div>
 </div>
 
 <!-- Recipe form modal -->
@@ -402,11 +402,15 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
-  // ---- Supabase config: paste your own values here ----
+  // ---- Config ----
   const SUPABASE_URL = 'https://wygxwvncyaskmrtgvuhz.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5Z3h3dm5jeWFza21ydGd2dWh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTQ0NzgsImV4cCI6MjEwMjg3MDQ3OH0.xjHNR13KQTs5zrGCzGL425uvPtGQ0VuHtyw4LwgTzkE';
+  
+  // GET A FREE API KEY AT: aistudio.google.com
+  const GEMINI_API_KEY = 'AQ.Ab8RN6IGQPW1btM8ynu9qOJl0OBndDFGgY5rQqg3RTOCVk0t8g'; 
+  
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  // -------------------------------------------------------
+  // ----------------
 
   const CATEGORIES = ['Breakfast','Lunch','Dinner','Baking','Snacks','Drinks','Other'];
   let recipes = [];
@@ -423,7 +427,6 @@
   const searchInput = document.getElementById('searchInput');
 
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
-
   function showToast(msg){
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -440,27 +443,19 @@
       recipes = recipesRow ? recipesRow.value : [];
       notes = notesRow ? notesRow.value : [];
     }catch(e){
-      console.error(e);
-      showToast("Couldn't connect to Supabase. Check your URL and key.");
       recipes = []; notes = [];
     }
     render();
   }
 
   async function saveRecipes(){
-    try{
-      const { error } = await sb.from('kv_store').upsert({ key: 'recipes-data', value: recipes, updated_at: new Date().toISOString() });
-      if(error) throw error;
-    }catch(e){ console.error(e); showToast("Couldn't save. Check your connection."); }
+    await sb.from('kv_store').upsert({ key: 'recipes-data', value: recipes, updated_at: new Date().toISOString() });
   }
   async function saveNotes(){
-    try{
-      const { error } = await sb.from('kv_store').upsert({ key: 'notes-data', value: notes, updated_at: new Date().toISOString() });
-      if(error) throw error;
-    }catch(e){ console.error(e); showToast("Couldn't save. Check your connection."); }
+    await sb.from('kv_store').upsert({ key: 'notes-data', value: notes, updated_at: new Date().toISOString() });
   }
 
-  // ---------- Tabs ----------
+  // ---------- UI & Render ----------
   document.querySelectorAll('.tab').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
@@ -476,23 +471,7 @@
   document.getElementById('addBtn').addEventListener('click', ()=>{
     if(activeTab === 'recipes') openRecipeForm(); else openNoteForm();
   });
-  document.getElementById('scanBtn').addEventListener('click', ()=>{
-    document.getElementById('scanInput').click();
-  });
-  document.getElementById('scanInput').addEventListener('change', (e)=>{
-    const file = e.target.files[0];
-    if(file) scanRecipePhoto(file);
-    e.target.value = '';
-  });
-  document.getElementById('emptyAddBtn').addEventListener('click', ()=>{
-    if(activeTab === 'recipes') openRecipeForm(); else openNoteForm();
-  });
   searchInput.addEventListener('input', render);
-
-  // ---------- Render ----------
-  function categoriesInUse(){
-    return CATEGORIES.filter(cat => recipes.some(r => (r.category||'Other') === cat));
-  }
 
   function recipeCard(r){
     const card = document.createElement('div');
@@ -505,7 +484,6 @@
       <div class="meta">
         <span class="tag cat">${escapeHtml(r.category||'Other')}</span>
         ${r.time ? `<span class="tag time">${escapeHtml(r.time)}</span>` : ''}
-        ${(r.tags||[]).slice(0,3).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}
       </div>
     `;
     card.addEventListener('click', ()=>openRecipeDetail(r.id));
@@ -517,26 +495,6 @@
     grid.innerHTML = '';
 
     if(activeTab === 'recipes'){
-      const usedCats = categoriesInUse();
-      tagChips.innerHTML = '';
-      if(usedCats.length){
-        tagChips.style.display = 'flex';
-        const allChip = document.createElement('button');
-        allChip.className = 'chip' + (activeCategory === 'All' ? ' active' : '');
-        allChip.textContent = 'All';
-        allChip.addEventListener('click', ()=>{ activeCategory = 'All'; render(); });
-        tagChips.appendChild(allChip);
-        usedCats.forEach(cat=>{
-          const c = document.createElement('button');
-          c.className = 'chip' + (activeCategory === cat ? ' active' : '');
-          c.textContent = cat;
-          c.addEventListener('click', ()=>{ activeCategory = activeCategory === cat ? 'All' : cat; render(); });
-          tagChips.appendChild(c);
-        });
-      } else {
-        tagChips.style.display = 'none';
-      }
-
       let list = recipes.filter(r=>{
         const matchesQ = !q || r.title.toLowerCase().includes(q) || (r.tags||[]).some(t=>t.toLowerCase().includes(q));
         const matchesCat = activeCategory === 'All' || (r.category||'Other') === activeCategory;
@@ -545,44 +503,16 @@
 
       if(list.length === 0){
         emptyState.style.display = 'block';
-        document.getElementById('emptyTitle').textContent = recipes.length ? 'Nothing matches' : 'No recipes yet';
-        document.getElementById('emptyBody').textContent = recipes.length ? 'Try a different search or category.' : 'Add the first one and start building your collection.';
         grid.style.display = 'none';
       } else {
         emptyState.style.display = 'none';
         grid.style.display = 'grid';
-
-        if(activeCategory === 'All' && !q){
-          grid.style.display = 'block';
-          CATEGORIES.forEach(cat=>{
-            const inCat = list.filter(r => (r.category||'Other') === cat).slice().reverse();
-            if(inCat.length === 0) return;
-            const heading = document.createElement('div');
-            heading.className = 'section-heading';
-            heading.innerHTML = `<svg viewBox="0 0 64 64"><use href="#lily-bloom"/></svg><h2>${cat}</h2><span class="count">${inCat.length}</span><span class="rule"></span>`;
-            grid.appendChild(heading);
-            const row = document.createElement('div');
-            row.className = 'grid';
-            row.style.padding = '0 24px';
-            row.style.maxWidth = '1080px';
-            row.style.margin = '0 auto';
-            inCat.forEach(r => row.appendChild(recipeCard(r)));
-            grid.appendChild(row);
-          });
-        } else {
-          grid.style.display = 'grid';
-          list.slice().reverse().forEach(r => grid.appendChild(recipeCard(r)));
-        }
+        list.slice().reverse().forEach(r => grid.appendChild(recipeCard(r)));
       }
     } else {
-      tagChips.style.display = 'none';
-      let list = notes.filter(n=>{
-        return !q || n.title.toLowerCase().includes(q) || (n.content||'').toLowerCase().includes(q);
-      });
+      let list = notes.filter(n=> !q || n.title.toLowerCase().includes(q) || (n.content||'').toLowerCase().includes(q));
       if(list.length === 0){
         emptyState.style.display = 'block';
-        document.getElementById('emptyTitle').textContent = notes.length ? 'Nothing matches' : 'No notes yet';
-        document.getElementById('emptyBody').textContent = notes.length ? 'Try a different search.' : 'Jot down kitchen tips, substitutions, whatever comes to mind.';
         grid.style.display = 'none';
       } else {
         emptyState.style.display = 'none';
@@ -590,92 +520,62 @@
         list.slice().reverse().forEach(n=>{
           const card = document.createElement('div');
           card.className = 'card note-card';
-          card.innerHTML = `
-            <h3>${escapeHtml(n.title)}</h3>
-            <p class="snippet">${escapeHtml(n.content||'')}</p>
-          `;
+          card.innerHTML = `<h3>${escapeHtml(n.title)}</h3><p class="snippet">${escapeHtml(n.content||'')}</p>`;
           card.addEventListener('click', ()=>openNoteForm(n.id));
           grid.appendChild(card);
         });
       }
     }
   }
+  function escapeHtml(str){ return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-  function escapeHtml(str){
-    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
-
-  // ---------- Recipe form ----------
-  const recipeOverlay = document.getElementById('recipeOverlay');
-  let currentPhotoDataUrl = null;
-
-  function resizeImage(file, maxDim, quality){
-    return new Promise((resolve, reject)=>{
-      const reader = new FileReader();
-      reader.onload = e=>{
-        const img = new Image();
-        img.onload = ()=>{
-          let { width, height } = img;
-          if(width > maxDim || height > maxDim){
-            if(width > height){ height = Math.round(height * (maxDim / width)); width = maxDim; }
-            else { width = Math.round(width * (maxDim / height)); height = maxDim; }
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = width; canvas.height = height;
-          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        };
-        img.onerror = reject;
-        img.src = e.target.result;
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-
-  function setPhotoPreview(dataUrl){
-    currentPhotoDataUrl = dataUrl;
-    const wrap = document.getElementById('photoPreviewWrap');
-    const box = document.getElementById('photoUploadBox');
-    if(dataUrl){
-      document.getElementById('photoPreviewImg').src = dataUrl;
-      wrap.style.display = 'block';
-      box.style.display = 'none';
-    } else {
-      wrap.style.display = 'none';
-      box.style.display = 'block';
-    }
-  }
-
-  document.getElementById('rPhotoInput').addEventListener('change', async (e)=>{
-    const file = e.target.files[0];
-    if(!file) return;
-    try{
-      const resized = await resizeImage(file, 1000, 0.82);
-      setPhotoPreview(resized);
-    }catch(err){
-      console.error(err);
-      showToast("Couldn't read that image, try another.");
-    }
-    e.target.value = '';
+  // ---------- AI Text Importer ----------
+  const aiOverlay = document.getElementById('aiOverlay');
+  document.getElementById('aiImportOpenBtn').addEventListener('click', () => {
+    document.getElementById('aiTextInput').value = '';
+    aiOverlay.classList.add('show');
   });
-  document.getElementById('removePhotoBtn').addEventListener('click', ()=> setPhotoPreview(null));
+  document.getElementById('closeAiForm').addEventListener('click', () => aiOverlay.classList.remove('show'));
+  document.getElementById('cancelAiForm').addEventListener('click', () => aiOverlay.classList.remove('show'));
 
-  // ---------- Scan recipe from photo (AI, via Supabase Edge Function) ----------
-  async function scanRecipePhoto(file){
-    const btn = document.getElementById('scanBtn');
-    const label = document.getElementById('scanBtnLabel');
-    const prevLabel = label.textContent;
+  document.getElementById('processAiBtn').addEventListener('click', async () => {
+    const text = document.getElementById('aiTextInput').value.trim();
+    if(!text) return showToast('Please paste some recipe text first.');
+    if(GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') return showToast('You need to add your API key in the code first!');
+
+    const btn = document.getElementById('processAiBtn');
+    btn.textContent = 'Thinking...';
     btn.disabled = true;
-    label.textContent = 'Reading page…';
-    showToast('Reading your recipe page...');
-    try{
-      const image = await resizeImage(file, 1600, 0.85);
-      const { data, error } = await sb.functions.invoke('quick-task', { body: { image } });
-      if(error) throw error;
-      if(!data || data.error) throw new Error((data && data.error) || 'No result');
 
+    try {
+      const prompt = `
+      Extract the following recipe text into a JSON object with these exact keys:
+      "title" (string), "time" (string), "servings" (string), "category" (string, one of: Breakfast, Lunch, Dinner, Baking, Snacks, Drinks, Other), "tags" (array of strings), "ingredients" (array of strings), "steps" (array of strings), "notes" (string).
+      If a value is missing, use an empty string or empty array.
+      Respond ONLY with valid JSON.
+      
+      Recipe text:
+      ${text}
+      `;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { response_mime_type: "application/json" }
+        })
+      });
+
+      if(!response.ok) throw new Error('API call failed');
+      const result = await response.json();
+      
+      const dataStr = result.candidates[0].content.parts[0].text;
+      const data = JSON.parse(dataStr);
+
+      aiOverlay.classList.remove('show');
       openRecipeForm();
+
       document.getElementById('rTitle').value = data.title || '';
       document.getElementById('rCategory').value = CATEGORIES.includes(data.category) ? data.category : 'Other';
       document.getElementById('rTime').value = data.time || '';
@@ -683,22 +583,29 @@
       document.getElementById('rTags').value = (data.tags || []).join(', ');
       document.getElementById('rNotes').value = data.notes || '';
 
-      const ings = (data.ingredients || []).map(String).filter(Boolean);
-      const steps = (data.steps || []).map(String).filter(Boolean);
       document.getElementById('ingredientRows').innerHTML = '';
       document.getElementById('stepRows').innerHTML = '';
-      (ings.length ? ings : ['']).forEach(t=>addIngredientRow(t));
-      (steps.length ? steps : ['']).forEach(t=>addStepRow(t));
+      const ings = (data.ingredients || []).filter(Boolean);
+      const steps = (data.steps || []).filter(Boolean);
+      
+      if(ings.length) ings.forEach(t=>addIngredientRow(t)); else addIngredientRow();
+      if(steps.length) steps.forEach(t=>addStepRow(t)); else addStepRow();
 
-      showToast('Scanned — check it over before saving');
-    }catch(err){
+      showToast('Imported! Review before saving.');
+
+    } catch (err) {
       console.error(err);
-      showToast("Couldn't read that page. Try again, or add it by hand.");
-    }finally{
+      showToast('Failed to extract recipe. Try pasting a cleaner version.');
+    } finally {
+      btn.textContent = 'Extract Recipe';
       btn.disabled = false;
-      label.textContent = prevLabel;
     }
-  }
+  });
+
+
+  // ---------- Standard Forms (Recipe & Notes) ----------
+  const recipeOverlay = document.getElementById('recipeOverlay');
+  let currentPhotoDataUrl = null;
 
   function openRecipeForm(id){
     editingRecipeId = id || null;
@@ -708,176 +615,88 @@
 
     if(id){
       const r = recipes.find(x=>x.id===id);
-      document.getElementById('recipeFormTitle').textContent = 'Edit recipe';
       document.getElementById('rTitle').value = r.title || '';
       document.getElementById('rTime').value = r.time || '';
       document.getElementById('rServings').value = r.servings || '';
       document.getElementById('rCategory').value = r.category || 'Other';
       document.getElementById('rTags').value = (r.tags||[]).join(', ');
       document.getElementById('rNotes').value = r.notes || '';
-      setPhotoPreview(r.photo || null);
       (r.ingredients||[]).forEach(i=>addIngredientRow(i.text));
       (r.steps||[]).forEach(s=>addStepRow(s.text));
-      if((r.ingredients||[]).length===0) addIngredientRow();
-      if((r.steps||[]).length===0) addStepRow();
     } else {
-      document.getElementById('recipeFormTitle').textContent = 'New recipe';
       document.getElementById('rTitle').value = '';
       document.getElementById('rTime').value = '';
       document.getElementById('rServings').value = '';
       document.getElementById('rCategory').value = 'Dinner';
       document.getElementById('rTags').value = '';
       document.getElementById('rNotes').value = '';
-      setPhotoPreview(null);
-      addIngredientRow();
-      addStepRow();
     }
     recipeOverlay.classList.add('show');
-    document.getElementById('rTitle').focus();
   }
-  function closeRecipeForm(){ recipeOverlay.classList.remove('show'); }
-  document.getElementById('closeRecipeForm').addEventListener('click', closeRecipeForm);
-  document.getElementById('cancelRecipeForm').addEventListener('click', closeRecipeForm);
-  recipeOverlay.addEventListener('click', e=>{ if(e.target===recipeOverlay) closeRecipeForm(); });
-
+  
   function addIngredientRow(val){
     const row = document.createElement('div');
     row.className = 'dyn-row';
-    const rid = 'ing'+(ingId++);
-    row.innerHTML = `<input type="text" id="${rid}" placeholder="2 cups flour" value="${val?escapeHtml(val):''}"><button type="button" aria-label="Remove ingredient">&times;</button>`;
+    row.innerHTML = `<input type="text" placeholder="2 cups flour" value="${val?escapeHtml(val):''}"><button type="button">&times;</button>`;
     row.querySelector('button').addEventListener('click', ()=>row.remove());
     document.getElementById('ingredientRows').appendChild(row);
   }
   function addStepRow(val){
     const row = document.createElement('div');
     row.className = 'dyn-row';
-    const rid = 'step'+(stepId++);
-    row.innerHTML = `<input type="text" id="${rid}" placeholder="Whisk dry ingredients together" value="${val?escapeHtml(val):''}"><button type="button" aria-label="Remove step">&times;</button>`;
+    row.innerHTML = `<input type="text" placeholder="Whisk together" value="${val?escapeHtml(val):''}"><button type="button">&times;</button>`;
     row.querySelector('button').addEventListener('click', ()=>row.remove());
     document.getElementById('stepRows').appendChild(row);
   }
+  
   document.getElementById('addIngredient').addEventListener('click', ()=>addIngredientRow());
   document.getElementById('addStep').addEventListener('click', ()=>addStepRow());
+  document.getElementById('closeRecipeForm').addEventListener('click', ()=>recipeOverlay.classList.remove('show'));
+  document.getElementById('cancelRecipeForm').addEventListener('click', ()=>recipeOverlay.classList.remove('show'));
 
   document.getElementById('saveRecipeBtn').addEventListener('click', async ()=>{
     const title = document.getElementById('rTitle').value.trim();
-    if(!title){ document.getElementById('rTitle').focus(); showToast('Give your recipe a title first'); return; }
+    if(!title){ showToast('Give your recipe a title'); return; }
+    
     const tags = document.getElementById('rTags').value.split(',').map(t=>t.trim()).filter(Boolean);
-    const ingredients = Array.from(document.querySelectorAll('#ingredientRows input')).map(i=>i.value.trim()).filter(Boolean).map(text=>({text}));
-    const steps = Array.from(document.querySelectorAll('#stepRows input')).map(i=>i.value.trim()).filter(Boolean).map(text=>({text}));
+    const ingredients = Array.from(document.querySelectorAll('#ingredientRows input')).map(i=>({text: i.value.trim()})).filter(i=>i.text);
+    const steps = Array.from(document.querySelectorAll('#stepRows input')).map(i=>({text: i.value.trim()})).filter(i=>i.text);
+    
     const data = {
       title,
       category: document.getElementById('rCategory').value,
       time: document.getElementById('rTime').value.trim(),
       servings: document.getElementById('rServings').value.trim(),
       tags, ingredients, steps,
-      notes: document.getElementById('rNotes').value.trim(),
-      photo: currentPhotoDataUrl || null,
+      notes: document.getElementById('rNotes').value.trim()
     };
+    
     if(editingRecipeId){
-      const r = recipes.find(x=>x.id===editingRecipeId);
-      Object.assign(r, data);
+      Object.assign(recipes.find(x=>x.id===editingRecipeId), data);
     } else {
       recipes.push(Object.assign({id: uid(), createdAt: Date.now()}, data));
     }
     await saveRecipes();
-    closeRecipeForm();
+    recipeOverlay.classList.remove('show');
     render();
     showToast('Recipe saved');
   });
 
-  document.getElementById('deleteRecipeBtn').addEventListener('click', async ()=>{
-    if(!confirm('Delete this recipe? This cannot be undone.')) return;
-    recipes = recipes.filter(r=>r.id!==editingRecipeId);
-    await saveRecipes();
-    closeRecipeForm();
-    render();
-    showToast('Recipe deleted');
-  });
-
-  // ---------- Recipe detail ----------
   const recipeDetailOverlay = document.getElementById('recipeDetailOverlay');
   let viewingRecipeId = null;
   function openRecipeDetail(id){
     viewingRecipeId = id;
     const r = recipes.find(x=>x.id===id);
     document.getElementById('dTitle').textContent = r.title;
-    const dPhoto = document.getElementById('dPhoto');
-    if(r.photo){ dPhoto.src = r.photo; dPhoto.style.display = 'block'; }
-    else { dPhoto.style.display = 'none'; }
-    const metaEl = document.getElementById('dMeta');
-    metaEl.innerHTML = `<span class="tag cat">${escapeHtml(r.category||'Other')}</span> ${r.time?`<span class="tag time">${escapeHtml(r.time)}</span>`:''} ${r.servings?`<span class="tag time">Serves ${escapeHtml(r.servings)}</span>`:''} ${(r.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}`;
-    document.getElementById('dIngredients').innerHTML = (r.ingredients||[]).map(i=>`<li>${escapeHtml(i.text)}</li>`).join('') || '<li style="color:var(--ink-soft)">None listed</li>';
-    document.getElementById('dSteps').innerHTML = (r.steps||[]).map(s=>`<li>${escapeHtml(s.text)}</li>`).join('') || '<li style="color:var(--ink-soft)">None listed</li>';
-    const notesSection = document.getElementById('dNotesSection');
-    if(r.notes){
-      notesSection.style.display='block';
-      document.getElementById('dNotes').textContent = r.notes;
-    } else {
-      notesSection.style.display='none';
-    }
+    document.getElementById('dIngredients').innerHTML = (r.ingredients||[]).map(i=>`<li>${escapeHtml(i.text)}</li>`).join('');
+    document.getElementById('dSteps').innerHTML = (r.steps||[]).map(s=>`<li>${escapeHtml(s.text)}</li>`).join('');
+    document.getElementById('dNotes').textContent = r.notes || '';
     recipeDetailOverlay.classList.add('show');
   }
   document.getElementById('closeRecipeDetail').addEventListener('click', ()=>recipeDetailOverlay.classList.remove('show'));
-  recipeDetailOverlay.addEventListener('click', e=>{ if(e.target===recipeDetailOverlay) recipeDetailOverlay.classList.remove('show'); });
   document.getElementById('detailEditBtn').addEventListener('click', ()=>{
     recipeDetailOverlay.classList.remove('show');
     openRecipeForm(viewingRecipeId);
-  });
-  document.getElementById('detailDeleteBtn').addEventListener('click', async ()=>{
-    if(!confirm('Delete this recipe? This cannot be undone.')) return;
-    recipes = recipes.filter(r=>r.id!==viewingRecipeId);
-    await saveRecipes();
-    recipeDetailOverlay.classList.remove('show');
-    render();
-    showToast('Recipe deleted');
-  });
-
-  // ---------- Notes ----------
-  const noteOverlay = document.getElementById('noteOverlay');
-  function openNoteForm(id){
-    editingNoteId = id || null;
-    document.getElementById('deleteNoteBtn').style.display = id ? 'block' : 'none';
-    if(id){
-      const n = notes.find(x=>x.id===id);
-      document.getElementById('noteFormTitle').textContent = 'Edit note';
-      document.getElementById('nTitle').value = n.title || '';
-      document.getElementById('nContent').value = n.content || '';
-    } else {
-      document.getElementById('noteFormTitle').textContent = 'New note';
-      document.getElementById('nTitle').value = '';
-      document.getElementById('nContent').value = '';
-    }
-    noteOverlay.classList.add('show');
-    document.getElementById('nTitle').focus();
-  }
-  function closeNoteForm(){ noteOverlay.classList.remove('show'); }
-  document.getElementById('closeNoteForm').addEventListener('click', closeNoteForm);
-  document.getElementById('cancelNoteForm').addEventListener('click', closeNoteForm);
-  noteOverlay.addEventListener('click', e=>{ if(e.target===noteOverlay) closeNoteForm(); });
-
-  document.getElementById('saveNoteBtn').addEventListener('click', async ()=>{
-    const title = document.getElementById('nTitle').value.trim();
-    if(!title){ document.getElementById('nTitle').focus(); showToast('Give your note a title first'); return; }
-    const content = document.getElementById('nContent').value.trim();
-    if(editingNoteId){
-      const n = notes.find(x=>x.id===editingNoteId);
-      n.title = title; n.content = content;
-    } else {
-      notes.push({id: uid(), title, content, createdAt: Date.now()});
-    }
-    await saveNotes();
-    closeNoteForm();
-    render();
-    showToast('Note saved');
-  });
-  document.getElementById('deleteNoteBtn').addEventListener('click', async ()=>{
-    if(!confirm('Delete this note? This cannot be undone.')) return;
-    notes = notes.filter(n=>n.id!==editingNoteId);
-    await saveNotes();
-    closeNoteForm();
-    render();
-    showToast('Note deleted');
   });
 
   loadData();
