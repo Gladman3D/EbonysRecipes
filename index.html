@@ -570,7 +570,11 @@
       if(!response.ok) throw new Error('API call failed');
       const result = await response.json();
       
-      const dataStr = result.candidates[0].content.parts[0].text;
+      let dataStr = result.candidates[0].content.parts[0].text;
+      
+      // FIX: Strip out markdown code blocks if the AI adds them to the JSON output
+      dataStr = dataStr.replace(/```json/gi, '').replace(/```/g, '').trim();
+      
       const data = JSON.parse(dataStr);
 
       aiOverlay.classList.remove('show');
@@ -594,7 +598,7 @@
       showToast('Imported! Review before saving.');
 
     } catch (err) {
-      console.error(err);
+      console.error("AI Error:", err);
       showToast('Failed to extract recipe. Try pasting a cleaner version.');
     } finally {
       btn.textContent = 'Extract Recipe';
