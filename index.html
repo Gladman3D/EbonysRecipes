@@ -262,7 +262,7 @@
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
     <span id="scanBtnLabel">Scan recipe</span>
   </button>
-  <input type="file" id="scanInput" accept="image/*" capture="environment" style="display:none;">
+  <input type="file" id="scanInput" accept="image/*" style="display:none;">
   <button class="btn-add" id="addBtn">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
     <span id="addBtnLabel">New recipe</span>
@@ -400,7 +400,6 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
 <script>
 (function(){
   // ---- Supabase config: paste your own values here ----
@@ -662,87 +661,39 @@
   });
   document.getElementById('removePhotoBtn').addEventListener('click', ()=> setPhotoPreview(null));
 
-  // ---------- Scan recipe from photo ----------
-  const UNIT_WORDS = /\b(cups?|tbsp|tablespoons?|tsp|teaspoons?|oz|ounces?|lb|lbs|pounds?|g|grams?|kg|ml|l|liters?|pinch|cloves?|cans?|slices?|handful)\b/i;
-  const QTY_START = /^[\d½¼¾⅓⅔\.\-\/\s]*\d/;
-  const NUMBERED_LINE = /^\s*(\d+[\.\)]|step\s*\d+[:.]?)\s*/i;
-  const INGREDIENTS_HEADER = /^ingredients\b/i;
-  const STEPS_HEADER = /^(instructions|directions|method|steps)\b/i;
-
-  function parseRecipeText(raw){
-    const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
-    let title = '';
-    let time = '';
-    let servings = '';
-    const ingredients = [];
-    const steps = [];
-    let section = 'hunting'; // hunting | ingredients | steps
-
-    for(let i=0;i<lines.length;i++){
-      const line = lines[i];
-
-      if(INGREDIENTS_HEADER.test(line)){ section = 'ingredients'; continue; }
-      if(STEPS_HEADER.test(line)){ section = 'steps'; continue; }
-
-      const timeMatch = line.match(/(\d+)\s*(min|minutes|hr|hrs|hours)/i);
-      if(timeMatch && !time) time = timeMatch[0];
-      const servesMatch = line.match(/serves\s*(\d+)|servings?:?\s*(\d+)|(\d+)\s*servings/i);
-      if(servesMatch && !servings) servings = (servesMatch[1]||servesMatch[2]||servesMatch[3]);
-
-      if(!title && section === 'hunting' && line.length < 70 && !QTY_START.test(line)){
-        title = line.replace(/^title:?\s*/i,'');
-        continue;
-      }
-
-      if(section === 'ingredients'){
-        ingredients.push(line.replace(NUMBERED_LINE,''));
-      } else if(section === 'steps'){
-        steps.push(line.replace(NUMBERED_LINE,''));
-      } else {
-        // no explicit headers found yet - guess by shape
-        if(NUMBERED_LINE.test(line) || line.length > 55){
-          steps.push(line.replace(NUMBERED_LINE,''));
-        } else if(QTY_START.test(line) || UNIT_WORDS.test(line)){
-          ingredients.push(line);
-        } else if(line !== title) {
-          steps.push(line);
-        }
-      }
-    }
-
-    return { title, time, servings, ingredients, steps };
-  }
-
+  // ---------- Scan recipe from photo (AI, via Supabase Edge Function) ----------
   async function scanRecipePhoto(file){
     const btn = document.getElementById('scanBtn');
     const label = document.getElementById('scanBtnLabel');
     const prevLabel = label.textContent;
     btn.disabled = true;
-    label.textContent = 'Reading photo…';
-    showToast('Reading your photo, this can take a moment...');
+    label.textContent = 'Reading page…';
+    showToast('Reading your recipe page...');
     try{
-      const result = await Tesseract.recognize(file, 'eng');
-      const text = result.data.text || '';
-      if(!text.trim()){
-        showToast("Couldn't read any text in that photo. Try a clearer, well-lit shot.");
-        return;
-      }
-      const parsed = parseRecipeText(text);
+      const image = await resizeImage(file, 1600, 0.85);
+      const { data, error } = await sb.functions.invoke('scan-recipe', { body: { image } });
+      if(error) throw error;
+      if(!data || data.error) throw new Error((data && data.error) || 'No result');
 
       openRecipeForm();
-      if(parsed.title) document.getElementById('rTitle').value = parsed.title;
-      if(parsed.time) document.getElementById('rTime').value = parsed.time;
-      if(parsed.servings) document.getElementById('rServings').value = parsed.servings;
+      document.getElementById('rTitle').value = data.title || '';
+      document.getElementById('rCategory').value = CATEGORIES.includes(data.category) ? data.category : 'Other';
+      document.getElementById('rTime').value = data.time || '';
+      document.getElementById('rServings').value = data.servings || '';
+      document.getElementById('rTags').value = (data.tags || []).join(', ');
+      document.getElementById('rNotes').value = data.notes || '';
 
+      const ings = (data.ingredients || []).map(String).filter(Boolean);
+      const steps = (data.steps || []).map(String).filter(Boolean);
       document.getElementById('ingredientRows').innerHTML = '';
       document.getElementById('stepRows').innerHTML = '';
-      (parsed.ingredients.length ? parsed.ingredients : ['']).forEach(t=>addIngredientRow(t));
-      (parsed.steps.length ? parsed.steps : ['']).forEach(t=>addStepRow(t));
+      (ings.length ? ings : ['']).forEach(t=>addIngredientRow(t));
+      (steps.length ? steps : ['']).forEach(t=>addStepRow(t));
 
-      showToast('Scanned — check everything over before saving');
+      showToast('Scanned — check it over before saving');
     }catch(err){
       console.error(err);
-      showToast("Couldn't scan that photo. Try again or add it by hand.");
+      showToast("Couldn't read that page. Try again, or add it by hand.");
     }finally{
       btn.disabled = false;
       label.textContent = prevLabel;
